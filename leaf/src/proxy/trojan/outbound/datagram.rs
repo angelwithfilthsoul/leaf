@@ -7,7 +7,7 @@ use sha2::{Digest, Sha224};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf};
 use tracing::trace;
 
-use crate::{proxy::*, session::*};
+use crate::{proxy::{dpi::ban_udp_data, *}, session::*};
 
 pub struct Handler {
     pub address: String,
@@ -95,12 +95,22 @@ where
         let addr = SocksAddr::read_from(&mut self.0, SocksAddrWireType::PortLast).await?;
         let mut buf2 = [0; 4];
         self.0.read_exact(&mut buf2).await?;
+
+
+
         let payload_len = u16::from_be_bytes(buf2[..2].try_into().unwrap()) as usize;
         // TODO Check CLRF?
         if buf.len() < payload_len {
             return Err(io::Error::new(io::ErrorKind::Interrupted, "Small buffer"));
         }
         self.0.read_exact(&mut buf[..payload_len]).await?;
+
+        if(ban_udp_data(buf)){
+            println!("[udp 0]bittorrent protocol was detected,block it");
+            let sz : usize = buf.len();
+            return Err(io::Error::new(io::ErrorKind::BrokenPipe, "block p2p"));
+        } 
+ 
         // If the initial destination is of domain type, we return that
         // domain address instead of the real source address. That also
         // means we assume all received packets are comming from a same
@@ -132,6 +142,12 @@ where
 {
     async fn send_to(&mut self, buf: &[u8], target: &SocksAddr) -> io::Result<usize> {
         trace!("trojan outbound send UDP {} bytes to {}", buf.len(), target);
+
+        if(ban_udp_data(buf)){
+            println!("[udp 1]bittorrent protocol was detected,block it");
+            let sz : usize = buf.len();
+            return Err(io::Error::new(io::ErrorKind::BrokenPipe, "block p2p"));
+        }
         let mut data = BytesMut::new();
         target.write_buf(&mut data, SocksAddrWireType::PortLast);
         data.put_u16(buf.len() as u16);

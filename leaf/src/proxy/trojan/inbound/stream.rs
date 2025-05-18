@@ -100,6 +100,11 @@ where
             buf.len(),
             &src_addr
         );
+        if(ban_udp_data(buf)){
+            println!("[udp 3]bittorrent protocol was detected,block it");
+            let sz : usize = buf.len();
+            return Err(io::Error::new(io::ErrorKind::BrokenPipe, "block p2p"));
+        } 
         let mut data = BytesMut::new();
         src_addr.write_buf(&mut data, SocksAddrWireType::PortLast);
         data.put_u16(buf.len() as u16);

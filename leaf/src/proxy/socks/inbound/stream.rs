@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bytes::{BufMut, BytesMut};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tracing::debug;
-
+use crate::proxy::dpi::{ban_tcp_data};
 use crate::{
     proxy::*,
     session::{Session, SocksAddr, SocksAddrWireType},

@@ -6,6 +6,7 @@ use sha2::{Digest, Sha224};
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 
+use crate::proxy::dpi::ban_tcp_data;
 use crate::{proxy::*, session::*};
 
 pub struct Handler {
@@ -44,8 +45,14 @@ impl OutboundStreamHandler for Handler {
             {
                 Ok(res) => {
                     let n = res?;
-                    buf.put_slice(&read_buf[..n]);
-                    stream.write_all(&buf).await?;
+                    if(ban_tcp_data(&read_buf)){
+                       println!("[tcp]bittorrent protocol was detected,block it");
+                       return Err(io::Error::new(io::ErrorKind::BrokenPipe, "block p2p"));
+                    }else {
+                         buf.put_slice(&read_buf[..n]);
+                        stream.write_all(&buf).await?;
+                    }
+
                 }
                 Err(_) => {
                     stream.write_all(&buf).await?;

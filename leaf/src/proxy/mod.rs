@@ -35,7 +35,7 @@ use crate::{
 pub mod datagram;
 pub mod inbound;
 pub mod outbound;
-
+pub mod dpi;
 #[cfg(any(feature = "inbound-amux", feature = "outbound-amux"))]
 pub mod amux;
 #[cfg(any(feature = "inbound-chain", feature = "outbound-chain"))]
