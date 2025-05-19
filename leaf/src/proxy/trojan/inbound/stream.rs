@@ -11,7 +11,7 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tracing::trace;
 
 use crate::{
-    proxy::*,
+    proxy::{dpi::ban_udp_data, *},
     session::{DatagramSource, Network, Session, SocksAddr, SocksAddrWireType},
 };
 

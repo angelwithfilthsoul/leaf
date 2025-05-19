@@ -373,7 +373,7 @@ pub fn start(rt_id: RuntimeId, opts: StartOptions) -> Result<(), Error> {
     let (reload_tx, mut reload_rx) = mpsc::channel(1);
     let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
 
-    let config_path = match opts.config {
+    let config_path: Option<String> = match opts.config {
         Config::File(ref p) => Some(p.to_owned()),
         _ => None,
     };

@@ -285,7 +285,7 @@ impl Dispatcher {
 
         sess.outbound_tag = outbound.clone();
 
-        let h = if let Some(h) = self.outbound_manager.read().await.get(&outbound) {
+        let h: Arc<dyn OutboundHandler + 'static> = if let Some(h) = self.outbound_manager.read().await.get(&outbound) {
             h
         } else {
             warn!("handler not found");
